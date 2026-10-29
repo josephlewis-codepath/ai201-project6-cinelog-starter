@@ -47,21 +47,41 @@ def add_to_watchlist(user_id, film_id):
     return entry
 
 
-def get_watchlist(user_id):
+WATCHLIST_SORTS = ("date_added", "title")
+
+
+def get_watchlist(user_id, sort="date_added"):
     """
     Return all films on a user's watchlist.
 
+    By default the list is sorted by date added, newest first — the same
+    order get_collection() uses. Pass sort="title" for an alphabetical list.
+
     Args:
         user_id (str): UUID of the user.
+        sort (str, optional): "date_added" (default) or "title".
 
     Returns:
         list[dict]: List of film dicts with watchlist metadata attached.
+
+    Raises:
+        ValueError: If sort is not one of WATCHLIST_SORTS.
     """
+    if sort not in WATCHLIST_SORTS:
+        raise ValueError(
+            f"Invalid sort '{sort}'. Expected one of: {', '.join(WATCHLIST_SORTS)}"
+        )
+
+    if sort == "title":
+        order = Film.title.asc()
+    else:
+        order = WatchlistEntry.date_added.desc()
+
     entries = (
         WatchlistEntry.query
         .filter_by(user_id=user_id)
         .join(Film)
-        .order_by(Film.title.asc())
+        .order_by(order)
         .all()
     )
 
