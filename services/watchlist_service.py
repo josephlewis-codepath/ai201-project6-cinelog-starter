@@ -25,7 +25,7 @@ def add_to_watchlist(user_id, film_id, public=False):
 
     Args:
         user_id (str): UUID of the user.
-        film_id (int): ID of the film. (Note: integer — pre-refactor)
+        film_id (str): UUID of the film.
         public (bool, optional): Whether other users may see this entry.
             Defaults to False (private) — see pr-response.md, Comment 4.
 
