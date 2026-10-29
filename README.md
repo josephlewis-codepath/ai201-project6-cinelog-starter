@@ -27,12 +27,16 @@ ai201-project6-cinelog-starter/
 ├── models.py                  # SQLAlchemy models
 ├── seed.py                    # Demo data loader
 ├── services/
-│   └── collection_service.py  # Business logic for collections
+│   ├── collection_service.py  # Business logic for collections
+│   └── watchlist_service.py   # Business logic for watchlists
 ├── routes/
 │   ├── films.py               # Film browsing endpoints
-│   └── collection.py          # Collection endpoints
+│   ├── collection.py          # Collection endpoints
+│   └── watchlist/
+│       └── watchlist.py       # Watchlist endpoints
 ├── tests/
-│   └── test_collection.py     # Tests for collection service
+│   ├── test_collection.py     # Tests for collection service
+│   └── test_watchlist.py      # Tests for watchlist service and endpoints
 ├── CONTRIBUTING.md            # Commit conventions and PR guidelines
 └── requirements.txt
 ```
@@ -55,6 +59,14 @@ ai201-project6-cinelog-starter/
 | GET | `/collection/<user_id>` | Get a user's collection (newest first) |
 | POST | `/collection/<user_id>/add` | Add a film to the collection |
 | DELETE | `/collection/<user_id>/remove` | Remove a film from the collection |
+
+### Watchlist
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/watchlist/<user_id>` | Get a user's watchlist (newest first; `?sort=title` for alphabetical) |
+| POST | `/watchlist/<user_id>/add` | Add a film to the watchlist. Body: `{"film_id": "<uuid>", "public": false}` (`public` optional, defaults to `false`) |
+| DELETE | `/watchlist/<user_id>/remove` | Remove a film from the watchlist |
 
 ---
 
