@@ -159,3 +159,16 @@ def test_get_watchlist_invalid_sort_raises(app, sample_user):
     with app.app_context():
         with pytest.raises(ValueError):
             get_watchlist(sample_user, sort="rating")
+
+
+# ── Visibility ───────────────────────────────────────────────────────────────
+
+def test_add_to_watchlist_defaults_to_private(app, sample_user, sample_film):
+    """
+    New watchlist entries should be private unless the user opts in
+    (see Comment 4 in pr-response.md).
+    """
+    with app.app_context():
+        entry = add_to_watchlist(user_id=sample_user, film_id=sample_film)
+
+        assert entry.public is False
