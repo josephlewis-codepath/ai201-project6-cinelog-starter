@@ -243,3 +243,22 @@ def test_same_film_on_two_users_watchlists(app, sample_user, sample_film):
 
         assert entry.user_id == other.id
         assert WatchlistEntry.query.filter_by(film_id=sample_film).count() == 2
+
+
+# ── UUID film IDs (post-refactor) ────────────────────────────────────────────
+
+def test_add_endpoint_accepts_uuid_film_id(app, sample_user, sample_film):
+    """
+    After the main-branch refactor, film IDs are UUID strings. The add
+    endpoint should accept one and echo it back unchanged.
+    """
+    client = app.test_client()
+    response = client.post(
+        f"/watchlist/{sample_user}/add",
+        json={"film_id": sample_film},
+    )
+
+    assert response.status_code == 201
+    body = response.get_json()
+    assert body["film_id"] == sample_film
+    assert len(body["film_id"]) == 36  # canonical UUID string
