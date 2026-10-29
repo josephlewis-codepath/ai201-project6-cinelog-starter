@@ -223,3 +223,23 @@ def test_remove_from_watchlist_not_on_list_raises(app, sample_user, sample_film)
     with app.app_context():
         with pytest.raises(NotInWatchlistError):
             remove_from_watchlist(user_id=sample_user, film_id=sample_film)
+
+
+# ── Edge case: deduplication is scoped per user ─────────────────────────────
+
+def test_same_film_on_two_users_watchlists(app, sample_user, sample_film):
+    """
+    The duplicate check is per (user_id, film_id). A second user adding a
+    film that's already on someone else's watchlist must succeed — the
+    dedup logic must not block on film_id alone.
+    """
+    with app.app_context():
+        other = User(username="otheruser", email="other@example.com")
+        db.session.add(other)
+        db.session.commit()
+
+        add_to_watchlist(user_id=sample_user, film_id=sample_film)
+        entry = add_to_watchlist(user_id=other.id, film_id=sample_film)
+
+        assert entry.user_id == other.id
+        assert WatchlistEntry.query.filter_by(film_id=sample_film).count() == 2
