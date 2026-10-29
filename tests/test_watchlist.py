@@ -11,8 +11,10 @@ from models import User, Film, WatchlistEntry
 from services.collection_service import FilmNotFoundError
 from services.watchlist_service import (
     add_to_watchlist,
+    remove_from_watchlist,
     get_watchlist,
     AlreadyInWatchlistError,
+    NotInWatchlistError,
 )
 
 
@@ -198,3 +200,26 @@ def test_add_endpoint_rejects_non_boolean_public(app, sample_user, sample_film):
     assert response.status_code == 400
     with app.app_context():
         assert WatchlistEntry.query.filter_by(user_id=sample_user).count() == 0
+
+
+# ── Remove ───────────────────────────────────────────────────────────────────
+
+def test_remove_from_watchlist_deletes_entry(app, sample_user, sample_film):
+    """Removing a film that is on the watchlist should delete its entry."""
+    with app.app_context():
+        add_to_watchlist(user_id=sample_user, film_id=sample_film)
+
+        assert remove_from_watchlist(user_id=sample_user, film_id=sample_film) is True
+        assert WatchlistEntry.query.filter_by(
+            user_id=sample_user, film_id=sample_film
+        ).first() is None
+
+
+def test_remove_from_watchlist_not_on_list_raises(app, sample_user, sample_film):
+    """
+    Removing a film that isn't on the watchlist should raise
+    NotInWatchlistError, mirroring remove_from_collection().
+    """
+    with app.app_context():
+        with pytest.raises(NotInWatchlistError):
+            remove_from_watchlist(user_id=sample_user, film_id=sample_film)
