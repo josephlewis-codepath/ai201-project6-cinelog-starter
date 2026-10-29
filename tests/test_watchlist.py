@@ -172,3 +172,29 @@ def test_add_to_watchlist_defaults_to_private(app, sample_user, sample_film):
         entry = add_to_watchlist(user_id=sample_user, film_id=sample_film)
 
         assert entry.public is False
+
+
+def test_add_to_watchlist_public_opt_in(app, sample_user, sample_film):
+    """Passing public=True should create a public entry."""
+    with app.app_context():
+        entry = add_to_watchlist(
+            user_id=sample_user, film_id=sample_film, public=True
+        )
+
+        assert entry.public is True
+
+
+def test_add_endpoint_rejects_non_boolean_public(app, sample_user, sample_film):
+    """
+    The endpoint should reject "public": "false" (a string) with a 400
+    rather than storing a truthy value and making the entry public.
+    """
+    client = app.test_client()
+    response = client.post(
+        f"/watchlist/{sample_user}/add",
+        json={"film_id": sample_film, "public": "false"},
+    )
+
+    assert response.status_code == 400
+    with app.app_context():
+        assert WatchlistEntry.query.filter_by(user_id=sample_user).count() == 0
